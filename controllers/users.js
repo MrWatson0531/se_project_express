@@ -1,4 +1,5 @@
 const User = require("../models/user");
+const { DEFAULT, NOT_FOUND, BAD_REQUEST } = require("../utils/errors");
 
 const getUsers = (req, res) => {
   User.find({})
@@ -16,7 +17,7 @@ const createUser = (req, res) => {
     .then((user) => res.status(201).send(user))
     .catch((err) => {
       console.error(err);
-      if (err.name == -"ValidationError") {
+      if (err.name === "ValidationError") {
         return res.status(400).send({ message: err.messaghe });
       }
       return res.status(500).send({ message: err.message });
@@ -30,11 +31,22 @@ const getUser = (req, res) => {
     .then((user) => res.status(200).send(user))
     .catch((err) => {
       console.error(err);
-      if (err.namr == -"") {
+      if (err.name === "") {
         //   return res.status(400).send({ message: err.messaghe });
       }
       return res.status(500).send({ message: err.message });
     });
 };
 
-module.exports = { getUsers, createUser, getUser };
+const deleteUser = (req, res) => {
+  const { userId } = req.param;
+
+  User.findByIdAndDelete(userId)
+    .orFail()
+    .then((user) => res.status(204).send(user))
+    .catch((err) => {
+      console.error(err);
+      res.status(500).send({ message: "Delete User Failed", err });
+    });
+};
+module.exports = { getUsers, createUser, getUser, deleteUser };

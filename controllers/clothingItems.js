@@ -1,4 +1,5 @@
 const clothingItem = require("../models/clothingItem");
+const { DEFAULT, NOT_FOUND, BAD_REQUEST } = require("../utils/errors");
 
 const createItem = (req, res) => {
   const { name, weather, imageUrl } = req.body;
@@ -18,35 +19,30 @@ const getItems = (req, res) => {
     .then((items) => res.status(200).send(items))
     .catch((err) => {
       console.error(err);
-      res.status(500).send({ message: "Get Items Failed", err });
-    });
-};
-
-const updateItem = (req, res) => {
-  const { itemId } = req.param;
-  const { imageUrl } = req.body;
-
-  clothingItem
-    .findByIdAndUpdate(itemId, { $set: { imageUrl } })
-    .orFail()
-    .then((item) => res.status(200).send(item))
-    .catch((err) => {
-      console.error(err);
-      res.status(500).send({ message: "Update Items Failed", err });
+      res.status({DEFAULT}).send({ message: "Get Items Failed", err });
     });
 };
 
 const deleteItem = (req, res) => {
-  const { itemId } = req.param;
+  const { itemId } = req.params;
 
   clothingItem
     .findByIdAndDelete(itemId)
     .orFail()
-    .then((item) => res.status(204).send(item))
+    .then((item) => res.status(200).send(item))
     .catch((err) => {
       console.error(err);
-      res.status(500).send({ message: "Delete Items Failed", err });
+      res.status({DEFAULT}).send({ message: "Delete Items Failed", err });
     });
 };
 
-module.exports = { createItem, getItems, updateItem, deleteItem };
+const likeItem =(req, res) => {
+  const {itemId} =req.params;
+
+  clothingItem.findByIdAndUpdate(itemId).orFail().then((item) => res.status(200).send(item))
+.catch((err) =>{
+  console.error(err);
+  res.status({DEFAULT}).send({message: "Like Items Failed", err });
+});};
+
+module.exports = { createItem, getItems, deleteItem, likeItem};

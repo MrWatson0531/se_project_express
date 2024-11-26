@@ -30,10 +30,6 @@ const clothingItemSchema = new mongoose.Schema({
     required: true,
   },
 
-  likes: {
-
-  },
-
   createdAt:{}
 });
 

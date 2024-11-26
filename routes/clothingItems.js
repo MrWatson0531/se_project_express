@@ -3,8 +3,8 @@ const router = require("express").Router();
 const {
   createItem,
   getItems,
-  updateItem,
   deleteItem,
+  likeItem
 } = require("../controllers/clothingItems");
 
 //CRUD
@@ -16,9 +16,11 @@ router.post("/", createItem);
 router.get("/", getItems);
 
 //Update
-router.put("/:itemId", updateItem);
+router.put("/:itemId", likeItem);
 
 //Delete
 router.delete("/:itemId", deleteItem);
+
+
 
 module.exports = router;

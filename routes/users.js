@@ -3,7 +3,6 @@ const {
   getUsers,
   createUser,
   getUser,
-  deleteUser,
 } = require("../controllers/users");
 
 //CRUD
@@ -18,6 +17,6 @@ router.get("/", getUsers);
 router.put("/:userId", getUser);
 
 //Delete
-router.delete("/:userId", deleteUser);
+// router.delete("/:userId", deleteUser);
 
 module.exports = router;

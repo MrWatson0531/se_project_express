@@ -11,7 +11,8 @@ const clothingItemSchema = new mongoose.Schema({
 
   weather: {
     type: String,
-    required: true,
+    required: [true, 'The "weather" field must be filled in'],
+    enum: ["hot", "warm", "cold"],
   },
 
   imageUrl: {
@@ -26,8 +27,16 @@ const clothingItemSchema = new mongoose.Schema({
   },
 
   owner: {
-    type: String,
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "user",
     required: true,
+  },
+
+  likes: {
+    type: [{type: mongoose.Schema.Types.ObjectId,
+      ref: "user"
+    }],
+    default: [],
   },
 
   createdAt:{}

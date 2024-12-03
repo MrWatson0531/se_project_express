@@ -6,7 +6,7 @@ const getUsers = (req, res) => {
     .then((users) => res.status(200).send(users))
     .catch((err) => {
       console.error(err);
-      return res.status({BAD_REQUEST}).send({ message: err.message });
+      return res.status({DEFAULT}).send({ message: "An error has occured on the server" });
     });
 };
 
@@ -18,9 +18,9 @@ const createUser = (req, res) => {
     .catch((err) => {
       console.error(err);
       if (err.name === "ValidationError") {
-        return res.status({BAD_REQUEST}).send({ message: err.messaghe });
+        return res.status({BAD_REQUEST}).send({ message: "Invalid data" });
       }
-      return res.status({NOT_FOUND}).send({ message: err.message });
+      return res.status({NOT_FOUND}).send({ message: "Unable to complete request" });
     });
 };
 
@@ -31,21 +31,14 @@ const getUser = (req, res) => {
     .then((user) => res.status(200).send(user))
     .catch((err) => {
       console.error(err);
-      if (err.name === "") {
-        //   return res.status(400).send({ message: err.messaghe });
-      }
-      return res.status({BAD_REQUEST}).send({ message: err.message });
-    });
+      if (err.name === 404) {
+      return res.status({BAD_REQUEST}).send({ message: "Get User Failed", err });
+    }else if(err.name === "CastError"){
+      return res.status({BAD_REQUEST}).send({message: "Invalid data"})
+    }else{
+      return res.status({DEFAULT}).send({message: "An error has poccured on the server"})
+    }});
 };
 
-const deleteUser = (req, res) => {
-  const { userId } = req.param;
 
-  User.findByIdAndDelete(userId)
-    .orFail()
-    .then((user) => res.status(204).send(user))
-    .catch((err) => {
-      res.status({BAD_REQUEST}).send({ message: "Delete User Failed", err });
-    });
-};
-module.exports = { getUsers, createUser, getUser, deleteUser };
+module.exports = { getUsers, createUser, getUser };

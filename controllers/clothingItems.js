@@ -11,7 +11,7 @@ const createItem = (req, res) => {
     })
     .catch((error) => {
       if (error.name === "ValidationError") {
-        res.status({ BAD_REQUEST }).send({ message: "Create Item Failed" });
+        res.status(BAD_REQUEST).send({ message: "Create Item Failed" });
       }
       return res.status(DEFAULT).send({ message: "Failed to create Item" });
     });
@@ -32,21 +32,13 @@ const deleteItem = (req, res) => {
 
   clothingItem
     .findByIdAndDelete(itemId)
-    .orFail((err) => {
-      if (err.name === "DocumentNotFoundError") {
-         res
-          .status({ NOT_FOUND })
-          .send({ message: "Unable to complete request" });
-      }
-    })
+    .orFail()
     .then((item) => res.status(200).send(item))
     .catch((err) => {
-      if (err.statusCode === 404) {
-        res
-          .status({ NOT_FOUND })
-          .send({ message: "Unable to complete request" });
+      if (err.statusCode === "DocumentNotFoundError") {
+        res.status(NOT_FOUND).send({ message: "Unable to complete request" });
       } else if (err.name === "CastError") {
-        res.status({ BAD_REQUEST }).send({ message: "Invalid data" });
+        res.status(BAD_REQUEST).send({ message: "Invalid data" });
       }
       return res.status(DEFAULT).send({ message: "Get Items Failed" });
     });
@@ -62,10 +54,10 @@ const likeItem = (req, res) =>
     .orFail()
     .then((item) => res.status(200).send(item))
     .catch((err) => {
-      if (err.name === 404) {
-        res.status({ NOT_FOUND }).send({ message: "Get User Failed", err });
+      if (err.name === "DocumentNotFoundError") {
+        res.status( NOT_FOUND ).send({ message: "Get User Failed", err });
       } else if (err.name === "CastError") {
-        return res.status({ BAD_REQUEST }).send({ message: "Invalid data" });
+        return res.status(BAD_REQUEST).send({ message: "Invalid data" });
       }
       return res.status(DEFAULT).send({ message: "Like Items Failed" });
     });
@@ -75,15 +67,17 @@ const dislikeItem = (req, res) =>
     req.params.itemId,
     { $pull: { likes: req.user._id } }, // remove _id from the array
     { new: true }
-    .orFail()
+      .orFail()
       .then((item) => res.status(200).send(item))
       .catch((error) => {
-        if (error.name === 400) {
+        if (error.name ==="DocumentNotFoundError") {
           res
-            .status({ BAD_REQUEST })
+            .status(NOT_FOUND)
             .send({ message: "dislike Items Failed", error });
-        } else if (error.name === "CastError"){
-         return res.status({ NOT_FOUND }).send({ message: "Dislike items failed", error });
+        } else if (error.name === "CastError") {
+          return res
+            .status(BAD_REQUEST)
+            .send({ message: "Invalid data", error });
         }
         return res.status(DEFAULT).send({ message: "Like Items Failed" });
       })

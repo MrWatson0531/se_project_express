@@ -7,15 +7,13 @@ const createItem = (req, res) => {
   clothingItem
     .create({ name, weather, imageUrl, owner: req.user._id })
     .then((item) => {
-      console.log(item);
       res.send({ data: item });
     })
-    .catch((err) => {
-      statusCode: if (err.name === "ValidationError") {
-        res.status({BAD_REQUEST}).send({message: "Create Item Failed" })
-      }else{
-        res.status({DEFAULT}).send({})
+    .catch((error) => {
+      if (error.name === "ValidationError") {
+        res.status({ BAD_REQUEST }).send({ message: "Create Item Failed" });
       }
+      return res.status(DEFAULT).send({ message: "Failed to create Item" });
     });
 };
 
@@ -23,9 +21,9 @@ const getItems = (req, res) => {
   clothingItem
     .find({})
     .then((items) => res.status(200).send(items))
-    .catch((err) => {
-      console.error(err);
-      res.status({ DEFAULT }).send({ message: "Get Items Failed" });
+    .catch((error) => {
+      console.error(error);
+      return res.status(DEFAULT).send({ message: "Get Items Failed" });
     });
 };
 
@@ -34,14 +32,24 @@ const deleteItem = (req, res) => {
 
   clothingItem
     .findByIdAndDelete(itemId)
-    .orFail()
+    .orFail((err) => {
+      if (err.name === "DocumentNotFoundError") {
+         res
+          .status({ NOT_FOUND })
+          .send({ message: "Unable to complete request" });
+      }
+    })
     .then((item) => res.status(200).send(item))
     .catch((err) => {
-      if(err.statusCode === 404){
-        return res.status({NOT_FOUND}).send({ message: "Unable to complete request" });
-      }else{
-      res.status({ DEFAULT }).send({ message: "Delete Items Failed" });
-}});
+      if (err.statusCode === 404) {
+        res
+          .status({ NOT_FOUND })
+          .send({ message: "Unable to complete request" });
+      } else if (err.name === "CastError") {
+        res.status({ BAD_REQUEST }).send({ message: "Invalid data" });
+      }
+      return res.status(DEFAULT).send({ message: "Get Items Failed" });
+    });
 };
 
 const likeItem = (req, res) =>
@@ -55,26 +63,30 @@ const likeItem = (req, res) =>
     .then((item) => res.status(200).send(item))
     .catch((err) => {
       if (err.name === 404) {
-        return res.status({NOT_FOUND}).send({ message: "Get User Failed", err });
-      }else if(err.name === "CastError"){
-        return res.status({BAD_REQUEST}).send({message: "Invalid data"})
+        res.status({ NOT_FOUND }).send({ message: "Get User Failed", err });
+      } else if (err.name === "CastError") {
+        return res.status({ BAD_REQUEST }).send({ message: "Invalid data" });
       }
-      res.status({ DEFAULT }).send({ message: "Like Items Failed" });
+      return res.status(DEFAULT).send({ message: "Like Items Failed" });
     });
 
 const dislikeItem = (req, res) =>
   clothingItem.findByIdAndUpdate(
     req.params.itemId,
     { $pull: { likes: req.user._id } }, // remove _id from the array
-    { new: true }.then((item) => res.status(200).send(item))
-    .catch((err) => {
-      if (err.name === 400) {
-        return res.status({BAD_REQUEST}).send({ message: "dislike Items Failed", err });
-      }else if(err.name === "CastError"){
-        return res.status({BAD_REQUEST}).send({message: "Invalid data"})
-      }
-      res.status({ DEFAULT }).send({ message: "Like Items Failed" });
-    }
-  ));
+    { new: true }
+    .orFail()
+      .then((item) => res.status(200).send(item))
+      .catch((error) => {
+        if (error.name === 400) {
+          res
+            .status({ BAD_REQUEST })
+            .send({ message: "dislike Items Failed", error });
+        } else if (error.name === "CastError"){
+         return res.status({ NOT_FOUND }).send({ message: "Dislike items failed", error });
+        }
+        return res.status(DEFAULT).send({ message: "Like Items Failed" });
+      })
+  );
 
 module.exports = { createItem, getItems, deleteItem, likeItem, dislikeItem };

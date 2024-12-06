@@ -23,7 +23,7 @@ const createUser = (req, res) => {
         return res.status( BAD_REQUEST ).send({ message: "Invalid data" });
       }
       return res
-        .status( NOT_FOUND )
+        .status( DEFAULT)
         .send({ message: "Unable to complete request" });
     });
 };
@@ -37,9 +37,9 @@ const getUser = (req, res) => {
       if (err.name === "DocumentNotFoundError") {
          res
           .status( NOT_FOUND )
-          .send({ message: "Failed to get user", err });
+          .send({ message: "Failed to get user" });
       } else if (err.name === "CastError"){ 
-        return res.status(BAD_REQUEST).send({ message: "Invalid Data", err });
+        return res.status(BAD_REQUEST).send({ message: "Invalid Data" });
       }
       return res.status(DEFAULT).send({ message: "Get user Failed" });
     });

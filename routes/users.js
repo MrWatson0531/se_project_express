@@ -1,20 +1,18 @@
 const router = require("express").Router();
 const {
-  getUsers,
-  createUser,
-  getUser,
+  
 } = require("../controllers/users");
 
 // CRUD
 
-// Create
-router.post("/", createUser);
+// // Create
+// router.post("/", createUser);
 
-// Read
-router.get("/", getUsers);
+// // Read
+// router.get("/", getUsers);
 
-// Update
-router.get("/:userId", getUser);
+// // Update
+// router.get("/:userId", getUser);
 
 // Delete
 // router.delete("/:userId", deleteUser);

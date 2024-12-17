@@ -55,7 +55,7 @@ const likeItem = (req, res) =>
     .then((item) => res.status(200).send(item))
     .catch((err) => {
       if (err.name === "DocumentNotFoundError") {
-        res.status( NOT_FOUND ).send({ message: "Get User Failed" });
+        res.status(NOT_FOUND).send({ message: "Get User Failed" });
       } else if (err.name === "CastError") {
         return res.status(BAD_REQUEST).send({ message: "Invalid data" });
       }
@@ -63,23 +63,21 @@ const likeItem = (req, res) =>
     });
 
 const dislikeItem = (req, res) =>
-  clothingItem.findByIdAndUpdate(
-    req.params.itemId,
-    { $pull: { likes: req.user._id } }, // remove _id from the array
-    { new: true })
-      .orFail()
-      .then((item) => res.status(200).send(item))
-      .catch((error) => {
-        if (error.name ==="DocumentNotFoundError") {
-          res
-            .status(NOT_FOUND)
-            .send({ message: "dislike Items Failed" });
-        } else if (error.name === "CastError") {
-          return res
-            .status(BAD_REQUEST)
-            .send({ message: "Invalid data", error });
-        }
-        return res.status(DEFAULT).send({ message: "Like Items Failed" });
-      });
+  clothingItem
+    .findByIdAndUpdate(
+      req.params.itemId,
+      { $pull: { likes: req.user._id } }, // remove _id from the array
+      { new: true }
+    )
+    .orFail()
+    .then((item) => res.status(200).send(item))
+    .catch((error) => {
+      if (error.name === "DocumentNotFoundError") {
+        res.status(NOT_FOUND).send({ message: "dislike Items Failed" });
+      } else if (error.name === "CastError") {
+        return res.status(BAD_REQUEST).send({ message: "Invalid data", error });
+      }
+      return res.status(DEFAULT).send({ message: "Like Items Failed" });
+    });
 
 module.exports = { createItem, getItems, deleteItem, likeItem, dislikeItem };

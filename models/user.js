@@ -1,6 +1,6 @@
 const mongoose = require("mongoose");
 const validator = require("validator");
-const { default: isEmail } = require("validator/lib/isEmail");
+
 
 const userSchema = new mongoose.Schema({
   name: {
@@ -41,6 +41,7 @@ const userSchema = new mongoose.Schema({
       },
       message:"Invalid password",
     },
+    select:false,
   },
 });
 

@@ -1,8 +1,9 @@
 const User = require("../models/user");
 const { DEFAULT, NOT_FOUND, BAD_REQUEST } = require("../utils/errors");
-const token = jwt.sign({ _id: user._id }, JWT_SECRET, {
-  expiresIn: "7d",
-});
+const jwt = require("jsonwebtoken");
+// const token = jwt.sign({ _id: User._id }, process.env.JWT_SECRET, {
+//   expiresIn: "7d",
+// });
 
 const getUsers = (req, res) => {
   User.find({})
@@ -31,8 +32,8 @@ const createUser = (req, res) => {
     });
 };
 
-const getUser = (req, res) => {
-  const { userId } = req.params;
+const getCurrentUser = (req, res) => {
+  const { userId } = req.user;
   User.findById(userId)
     .orFail()
     .then((user) => res.status(200).send(user))
@@ -48,7 +49,10 @@ const getUser = (req, res) => {
 
 const login = (req, res) => {
   const { email, password } = req.params;
-  User.findByCredentials(email, password)
+  User.findOne({ email }).select('+password')
+  .then((user) => {
+    // the password hash will be there, in the user object 
+  })
     .orFail()
     .then((token) => res.status(200).send(token))
     .catch((err) => {
@@ -59,4 +63,16 @@ const login = (req, res) => {
     });
 };
 
-module.exports = { getUsers, createUser, getUser, login };
+const updateUser = (req, res) => {
+  const {name, avatar} = req.params;
+  User.findByIdAndUpdate(name, avatar)
+  .orFail()
+  .then((user) =>res.status(200).send(user))
+  .catch((err) =>{
+    if (err.name === "ValidationError"){
+      return res.status(BAD_REQUEST).send({ message: "Invalid Data" });
+    }
+    return res.status(DEFAULT).send({ messsage: "Failed to update user"})
+  });
+};
+module.exports = { getUsers, createUser, getCurrentUser, login, updateUser };

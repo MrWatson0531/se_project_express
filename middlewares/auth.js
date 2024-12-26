@@ -1,6 +1,20 @@
-const token = authorization.replace("Bearer ", "");
+const jwt = require("jsonwebtoken");
+const { JWT_SECRET } = require("../utils/config");
 
-payload = jwt.verify(token, JWT_SECRET);
+function auth(req, res, next) {
+  const { authorization } = req.headers;
 
-req.user = payload;
-next();
+  // error checks to make sure authorization variable is valid
+
+  const token = authorization.replace("Bearer ", "");
+
+  let payload;
+
+  // Maybe wrap this logic in a try/catch
+  payload = jwt.verify(token, JWT_SECRET);
+
+  req.user = payload;
+  return next();
+}
+
+module.exports = auth;

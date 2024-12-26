@@ -12,14 +12,18 @@ const {
 
 // Create
 router.post("/", createItem);
+// post("/items");
 
 // Read
 router.get("/", getItems);
+// get("/items");
 
 // Update
 router.put("/:itemId/likes", likeItem);
 
 router.delete("/:itemId/likes", dislikeItem);
+
+//  delete("/items/:itemId");
 
 // Delete
 router.delete("/:itemId", deleteItem);

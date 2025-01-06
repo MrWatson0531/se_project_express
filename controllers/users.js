@@ -1,30 +1,25 @@
-const User = require("../models/user");
-const { DEFAULT, NOT_FOUND, BAD_REQUEST } = require("../utils/errors");
 const jwt = require("jsonwebtoken");
-// const token = jwt.sign({ _id: User._id }, process.env.JWT_SECRET, {
-//   expiresIn: "7d",
-// });
+const bcrypt = require("bcryptjs");
+const User = require("../models/user");
+const {
+  DEFAULT,
+  NOT_FOUND,
+  BAD_REQUEST,
+  CONFLICT,
+} = require("../utils/errors");
 
-const getUsers = (req, res) => {
-  User.find({})
-    .then((users) => res.status(200).send(users))
-    .catch((err) => {
-      console.error(err);
-      return res
-        .status(DEFAULT)
-        .send({ message: "An error has occured on the server" });
-    });
-};
+const JWT_SECRET = "Secret Password";
 
 const createUser = (req, res) => {
   const { name, avatar, email, password } = req.body;
-
-  User.create({ name, avatar, email, password })
+  bcrypt
+    .hash(password, 10)
+    .then((hash) => User.create({ name, avatar, email, password: hash }))
     .then((user) => res.status(201).send(user))
     .catch((err) => {
       console.error(err);
-      if (err.name === "ValidationError") {
-        return res.status(BAD_REQUEST).send({ message: "Invalid data" });
+      if (err.code === 11000) {
+        return res.status(CONFLICT).send({ message: "user already exists" });
       }
       return res
         .status(DEFAULT)
@@ -33,7 +28,7 @@ const createUser = (req, res) => {
 };
 
 const getCurrentUser = (req, res) => {
-  const { userId } = req.user;
+  const { userId } = req.user._id;
   User.findById(userId)
     .orFail()
     .then((user) => res.status(200).send(user))
@@ -49,10 +44,13 @@ const getCurrentUser = (req, res) => {
 
 const login = (req, res) => {
   const { email, password } = req.params;
-  User.findOne({ email }).select('+password')
-  .then((user) => {
-    // the password hash will be there, in the user object 
-  })
+  User.findByCredentials(email, password)
+    .then((user) => {
+      const token = jwt.sign({ _id: user._id }, JWT_SECRET, {
+        expiresIn: "7d",
+      });
+      res.send({ token });
+    })
     .orFail()
     .then((token) => res.status(200).send(token))
     .catch((err) => {
@@ -64,15 +62,22 @@ const login = (req, res) => {
 };
 
 const updateUser = (req, res) => {
-  const {name, avatar} = req.params;
-  User.findByIdAndUpdate(name, avatar)
-  .orFail()
-  .then((user) =>res.status(200).send(user))
-  .catch((err) =>{
-    if (err.name === "ValidationError"){
-      return res.status(BAD_REQUEST).send({ message: "Invalid Data" });
-    }
-    return res.status(DEFAULT).send({ messsage: "Failed to update user"})
-  });
+  const { name, avatar } = req.body;
+  User.findByIdAndUpdate(
+    req.user._id,
+    { name, avatar },
+    { new: true, runValidators: true }
+  )
+    .orFail()
+    .then((user) => res.status(200).send(user))
+    .catch((err) => {
+      if (err.name === "DocumentNotFoundError") {
+        return res.status(NOT_FOUND).send({ message: "user not found" });
+      }
+      if (err.name === "ValidationError") {
+        return res.status(BAD_REQUEST).send({ message: "Invalid Data" });
+      }
+      return res.status(DEFAULT).send({ messsage: "Failed to update user" });
+    });
 };
-module.exports = { getUsers, createUser, getCurrentUser, login, updateUser };
+module.exports = { createUser, getCurrentUser, login, updateUser };

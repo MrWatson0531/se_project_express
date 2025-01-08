@@ -6,6 +6,7 @@ const {
   NOT_FOUND,
   BAD_REQUEST,
   CONFLICT,
+  NOT_AUTHORIZED,
 } = require("../utils/errors");
 
 const JWT_SECRET = "Secret Password";
@@ -18,6 +19,9 @@ const createUser = (req, res) => {
     .then((user) => res.status(201).send(user))
     .catch((err) => {
       console.error(err);
+      if (err.name === "ValidationError") {
+        return res.status(BAD_REQUEST).send({ message: "Validation Error" });
+      }
       if (err.code === 11000) {
         return res.status(CONFLICT).send({ message: "user already exists" });
       }
@@ -28,7 +32,7 @@ const createUser = (req, res) => {
 };
 
 const getCurrentUser = (req, res) => {
-  const { userId } = req.user._id;
+  const userId = req.user._id;
   User.findById(userId)
     .orFail()
     .then((user) => res.status(200).send(user))
@@ -44,16 +48,24 @@ const getCurrentUser = (req, res) => {
 
 const login = (req, res) => {
   const { email, password } = req.params;
-  User.findByCredentials(email, password)
+  if (!email || !password) {
+    return res
+      .status(BAD_REQUEST)
+      .send({ message: "The email and password fields are required" });
+  }
+  return User.findUserByCredentials(email, password)
     .then((user) => {
       const token = jwt.sign({ _id: user._id }, JWT_SECRET, {
         expiresIn: "7d",
       });
       res.send({ token });
     })
-    .orFail()
-    .then((token) => res.status(200).send(token))
     .catch((err) => {
+      if (err.message === "Incorrect email or password") {
+        return res
+          .status(NOT_AUTHORIZED)
+          .send({ message: "email or password are incorrect" });
+      }
       if (err.name === "ValidationError") {
         return res.status(BAD_REQUEST).send({ message: "Invalid Data" });
       }

@@ -15,8 +15,15 @@ const createUser = (req, res) => {
   const { name, avatar, email, password } = req.body;
   bcrypt
     .hash(password, 10)
+    // .then(() => User.create({ name, avatar, email }))
     .then((hash) => User.create({ name, avatar, email, password: hash }))
-    .then((user) => res.status(201).send(user))
+    .then((user) =>
+      res.status(201).send({
+        email: user.email,
+        name: user.name,
+        avatar: user.avatar,
+      })
+    )
     .catch((err) => {
       console.error(err);
       if (err.name === "ValidationError") {
@@ -47,7 +54,7 @@ const getCurrentUser = (req, res) => {
 };
 
 const login = (req, res) => {
-  const { email, password } = req.params;
+  const { email, password } = req.body;
   if (!email || !password) {
     return res
       .status(BAD_REQUEST)

@@ -1,5 +1,5 @@
 const clothingItem = require("../models/clothingItem");
-const { DEFAULT, NOT_FOUND, BAD_REQUEST } = require("../utils/errors");
+const { DEFAULT, NOT_FOUND, BAD_REQUEST, NOT_AUTHORIZED } = require("../utils/errors");
 
 const createItem = (req, res) => {
   const { name, weather, imageUrl } = req.body;
@@ -31,13 +31,23 @@ const deleteItem = (req, res) => {
   const { itemId } = req.params;
 
   clothingItem
-    .deleteOne(itemId)
+    .findById(itemId)
     .orFail()
-    .then((item) => res.status(200).send(item))
+    .then((item) => {
+      if (String(item.owner) !== req.user._id) {
+        return res
+          .status(NOT_AUTHORIZED)
+          .send({ message: "User not authorized" });
+      }
+      return item
+        .deleteOne()
+        .then(() => res.status(200).send({ message: "successfully deleted" }));
+    })
     .catch((err) => {
       if (err.name === "DocumentNotFoundError") {
         res.status(NOT_FOUND).send({ message: "Unable to complete request" });
-      } else if (err.name === "CastError") {
+      }
+      if (err.name === "CastError") {
         res.status(BAD_REQUEST).send({ message: "Invalid data" });
       }
       return res.status(DEFAULT).send({ message: "Get Items Failed" });

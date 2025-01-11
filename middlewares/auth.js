@@ -1,7 +1,7 @@
 const jwt = require("jsonwebtoken");
 const { NOT_AUTHORIZED } = require("../utils/errors");
 
-const { JWT_SECRET } = "Secret Password";
+const JWT_SECRET = "Secret Password";
 
 
 function auth(req, res, next) {

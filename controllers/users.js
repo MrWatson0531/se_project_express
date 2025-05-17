@@ -65,7 +65,15 @@ const login = (req, res) => {
       const token = jwt.sign({ _id: user._id }, JWT_SECRET, {
         expiresIn: "7d",
       });
-      res.send({ token });
+      res.send({
+        token,
+        user: {
+          _id: user._id,
+          name: user.name,
+          email: user.email,
+          avatar: user.avatar,
+        },
+      });
     })
     .catch((err) => {
       if (err.message === "Incorrect email or password") {
@@ -94,6 +102,7 @@ const updateUser = (req, res) => {
         return res.status(NOT_FOUND).send({ message: "user not found" });
       }
       if (err.name === "ValidationError") {
+        console.error(err);
         return res.status(BAD_REQUEST).send({ message: "Invalid Data" });
       }
       return res.status(DEFAULT).send({ messsage: "Failed to update user" });

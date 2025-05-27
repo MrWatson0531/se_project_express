@@ -1,7 +1,9 @@
+const BadReqestError = require("../errors/BadRequestError");
+const NotFoundError = require("../errors/NotFoundError");
 const clothingItem = require("../models/clothingItem");
 const { DEFAULT, NOT_FOUND, BAD_REQUEST, FORBIDDEN } = require("../utils/errors");
 
-const createItem = (req, res) => {
+const createItem = (req, res, next) => {
   const { name, weather, imageUrl } = req.body;
 
   clothingItem
@@ -9,11 +11,13 @@ const createItem = (req, res) => {
     .then((item) => {
       res.send({ data: item });
     })
-    .catch((error) => {
-      if (error.name === "ValidationError") {
-        res.status(BAD_REQUEST).send({ message: "Create Item Failed" });
+    .catch((err) => {
+      if (err.name === "ValidationError") {
+        return next(new BadReqestError("Create Item Failed"))
+        //res.status(BAD_REQUEST).send({ message: "Create Item Failed" });
       }
-      return res.status(DEFAULT).send({ message: "Failed to create Item" });
+      //return res.status(DEFAULT).send({ message: "Failed to create Item" });
+      return next(err)
     });
 };
 
@@ -21,9 +25,8 @@ const getItems = (req, res) => {
   clothingItem
     .find({})
     .then((items) => res.status(200).send(items))
-    .catch((error) => {
-      console.error(error);
-      return res.status(DEFAULT).send({ message: "Get Items Failed" });
+    .catch((err) => {
+      return next(err);
     });
 };
 
@@ -45,12 +48,12 @@ const deleteItem = (req, res) => {
     })
     .catch((err) => {
       if (err.name === "DocumentNotFoundError") {
-        res.status(NOT_FOUND).send({ message: "Unable to complete request" });
+        return next(new NotFoundError("Clothing Item not found"));
       }
       if (err.name === "CastError") {
-        res.status(BAD_REQUEST).send({ message: "Invalid data" });
+        return next(new BadReqestError("Failed to delete item"));
       }
-      return res.status(DEFAULT).send({ message: "Get Items Failed" });
+      next(err);
     });
 };
 
@@ -65,11 +68,11 @@ const likeItem = (req, res) =>
     .then((item) => res.status(200).send(item))
     .catch((err) => {
       if (err.name === "DocumentNotFoundError") {
-        res.status(NOT_FOUND).send({ message: "Get User Failed" });
+        return next(new NotFoundError("Like item failed"));
       } else if (err.name === "CastError") {
-        return res.status(BAD_REQUEST).send({ message: "Invalid data" });
+        return next(new BadReqestError("Invalid data"));
       }
-      return res.status(DEFAULT).send({ message: "Like Items Failed" });
+      return next(err);
     });
 
 const dislikeItem = (req, res) =>
@@ -81,13 +84,13 @@ const dislikeItem = (req, res) =>
     )
     .orFail()
     .then((item) => res.status(200).send(item))
-    .catch((error) => {
-      if (error.name === "DocumentNotFoundError") {
-        res.status(NOT_FOUND).send({ message: "dislike Items Failed" });
+    .catch((err) => {
+      if (err.name === "DocumentNotFoundError") {
+        return next(new NotFoundError("Like item failed"));
       } else if (error.name === "CastError") {
-        return res.status(BAD_REQUEST).send({ message: "Invalid data", error });
+        return next(new BadReqestError("Invalid data"));
       }
-      return res.status(DEFAULT).send({ message: "Like Items Failed" });
+      return next(err);
     });
 
 module.exports = { createItem, getItems, deleteItem, likeItem, dislikeItem };

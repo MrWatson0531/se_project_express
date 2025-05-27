@@ -8,6 +8,10 @@ const {
   CONFLICT,
   NOT_AUTHORIZED,
 } = require("../utils/errors");
+const BadReqestError = require("../errors/BadRequestError");
+const ConflictError = require("../errors/ConflictError");
+const NotFoundError = require("../errors/NotFoundError");
+const NotAuthorizedError = require("../errors/notAuthorizedError");
 
 const JWT_SECRET = "Secret Password";
 
@@ -27,14 +31,12 @@ const createUser = (req, res) => {
     .catch((err) => {
       console.error(err);
       if (err.name === "ValidationError") {
-        return res.status(BAD_REQUEST).send({ message: "Validation Error" });
+        return next(new BadReqestError("Validation error"));
       }
-      if (err.code === 11000) {
-        return res.status(CONFLICT).send({ message: "user already exists" });
+      if (err.code === 409) {
+        return next(new ConflictError("User already exists"));
       }
-      return res
-        .status(DEFAULT)
-        .send({ message: "Unable to complete request" });
+      return next(err);
     });
 };
 
@@ -45,20 +47,18 @@ const getCurrentUser = (req, res) => {
     .then((user) => res.status(200).send(user))
     .catch((err) => {
       if (err.name === "DocumentNotFoundError") {
-        res.status(NOT_FOUND).send({ message: "Failed to get user" });
+        return next(new NotFoundError("User not Found"));
       } else if (err.name === "CastError") {
-        return res.status(BAD_REQUEST).send({ message: "Invalid Data" });
+        return next(new BadReqestError("User not found"));
       }
-      return res.status(DEFAULT).send({ message: "Get user Failed" });
+      return next(err);
     });
 };
 
 const login = (req, res) => {
   const { email, password } = req.body;
   if (!email || !password) {
-    return res
-      .status(BAD_REQUEST)
-      .send({ message: "The email and password fields are required" });
+    return next(new BadReqestError("Login failed"));
   }
   return User.findUserByCredentials(email, password)
     .then((user) => {
@@ -77,9 +77,7 @@ const login = (req, res) => {
     })
     .catch((err) => {
       if (err.message === "Incorrect email or password") {
-        return res
-          .status(NOT_AUTHORIZED)
-          .send({ message: "email or password are incorrect" });
+        return next(new NotFoundError);
       }
       if (err.name === "ValidationError") {
         return res.status(BAD_REQUEST).send({ message: "Invalid Data" });

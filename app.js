@@ -1,7 +1,9 @@
 require("dotenv").config();
+const errorHandler = require("./middlewares/errors")
 const mongoose = require("mongoose");
 const express = require("express");
 const cors = require("cors");
+const {errors} = require('celebrate');
 
 mongoose.connect("mongodb://127.0.0.1:27017/wtwr_db");
 const app = express();
@@ -18,12 +20,14 @@ const indexRouter = require("./routes/index");
 
 app.use(cors());
 app.use(express.json());
-// app.use((req, res, next) => {
-//   req.user = {};
-//   next();
-// });
+app.use((err, req, res, next) => {
+    console.error(err);
+  res.status(err.statusCode).send({ message: err.message });
+});
 app.use("/", indexRouter);
-
+app.use(errorHandler);
+app.use(routes);
+app.use(errors());
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
 });

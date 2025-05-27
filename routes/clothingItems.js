@@ -12,7 +12,7 @@ const {
 // CRUD
 
 // Create
-router.post("/", auth, createItem);
+router.post("/", auth, createItem); 
 // post("/items");
 
 // Read

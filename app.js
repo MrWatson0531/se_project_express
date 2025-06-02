@@ -27,7 +27,7 @@ app.use((err, req, res, next) => {
 app.use("/", indexRouter);
 app.use(errorHandler);
 app.use(routes);
-app.use(errors());
+app.use(errors()); 
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
 });

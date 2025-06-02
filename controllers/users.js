@@ -77,12 +77,12 @@ const login = (req, res) => {
     })
     .catch((err) => {
       if (err.message === "Incorrect email or password") {
-        return next(new NotFoundError);
+        return next(new NotAuthorizedError("User not authorized"));
       }
       if (err.name === "ValidationError") {
-        return res.status(BAD_REQUEST).send({ message: "Invalid Data" });
+        return next(new BadReqestError("Login failed"));
       }
-      return res.status(DEFAULT).send({ message: "Login Failed" });
+      return next(err);
     });
 };
 
@@ -97,13 +97,13 @@ const updateUser = (req, res) => {
     .then((user) => res.status(200).send(user))
     .catch((err) => {
       if (err.name === "DocumentNotFoundError") {
-        return res.status(NOT_FOUND).send({ message: "user not found" });
+        return next(new NotFoundError("user not found"));
       }
       if (err.name === "ValidationError") {
         console.error(err);
-        return res.status(BAD_REQUEST).send({ message: "Invalid Data" });
+        return next(new BadReqestError("Failed to update user"));
       }
-      return res.status(DEFAULT).send({ messsage: "Failed to update user" });
+      return next(err);
     });
 };
 module.exports = { createUser, getCurrentUser, login, updateUser };

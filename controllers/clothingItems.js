@@ -1,4 +1,5 @@
 const BadReqestError = require("../errors/BadRequestError");
+const ForbiddenError = require("../errors/ForbiddenError");
 const NotFoundError = require("../errors/NotFoundError");
 const clothingItem = require("../models/clothingItem");
 const { DEFAULT, NOT_FOUND, BAD_REQUEST, FORBIDDEN } = require("../utils/errors");
@@ -38,9 +39,7 @@ const deleteItem = (req, res) => {
     .orFail()
     .then((item) => {
       if (String(item.owner) !== req.user._id) {
-        return res
-          .status(FORBIDDEN)
-          .send({ message: "User not authorized" });
+        return next(new ForbiddenError("User not authorized"));
       }
       return item
         .deleteOne()

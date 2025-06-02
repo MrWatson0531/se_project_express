@@ -8,11 +8,12 @@ const {
   likeItem,
   dislikeItem,
 } = require("../controllers/clothingItems");
+const { validateCardBody } = require("../middlewares/Validation");
 
 // CRUD
 
 // Create
-router.post("/", auth, createItem); 
+router.post("/", validateCardBody, auth, createItem); 
 // post("/items");
 
 // Read

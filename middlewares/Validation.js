@@ -1,13 +1,10 @@
 const { Joi, celebrate } = require("celebrate");
+const router = require("express").Router();
 const validator = require("validator");
-
-const { celebrate, Joi } = require("celebrate");
 const { createItem } = require("../controllers/clothingItems");
 const {
-  updateUser,
   login,
   createUser,
-  getCurrentUser,
 } = require("../controllers/users");
 
 const validateURL = (value, helpers) => {

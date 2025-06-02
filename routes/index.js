@@ -1,6 +1,4 @@
 const router = require("express").Router();
-const { NOT_FOUND } = require("../utils/errors");
-
 const clothingItem = require("./clothingItems");
 const userRouter = require("./users");
 const { auth } = require("../middlewares/auth");
@@ -14,10 +12,11 @@ router.use("/items", validateCardBody, clothingItem);
 router.post("/signin", auth, login);
 router.post("/signup", auth, createUser);
 
-router.use((req, res) => {
+router.use((req, res, err, next) => {
   if (err.name === "DocumentNotFoundError") {
     return next(new NotFoundError("Clothing Item not found"));
   }
+  return next();
 });
 
 module.exports = router;

@@ -1,21 +1,14 @@
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcryptjs");
 const User = require("../models/user");
-const {
-  DEFAULT,
-  NOT_FOUND,
-  BAD_REQUEST,
-  CONFLICT,
-  NOT_AUTHORIZED,
-} = require("../utils/errors");
 const BadReqestError = require("../errors/BadRequestError");
 const ConflictError = require("../errors/ConflictError");
 const NotFoundError = require("../errors/NotFoundError");
-const NotAuthorizedError = require("../errors/notAuthorizedError");
+const NotAuthorizedError = require("../errors/NotAuthorizedError");
 
 const JWT_SECRET = "Secret Password";
 
-const createUser = (req, res) => {
+const createUser = (req, res, next) => {
   const { name, avatar, email, password } = req.body;
   bcrypt
     .hash(password, 10)
@@ -40,7 +33,7 @@ const createUser = (req, res) => {
     });
 };
 
-const getCurrentUser = (req, res) => {
+const getCurrentUser = (req, res, next) => {
   const userId = req.user._id;
   User.findById(userId)
     .orFail()
@@ -48,14 +41,14 @@ const getCurrentUser = (req, res) => {
     .catch((err) => {
       if (err.name === "DocumentNotFoundError") {
         return next(new NotFoundError("User not Found"));
-      } else if (err.name === "CastError") {
+      } if (err.name === "CastError") {
         return next(new BadReqestError("User not found"));
       }
       return next(err);
     });
 };
 
-const login = (req, res) => {
+const login = (req, res, next) => {
   const { email, password } = req.body;
   if (!email || !password) {
     return next(new BadReqestError("Login failed"));
@@ -86,7 +79,7 @@ const login = (req, res) => {
     });
 };
 
-const updateUser = (req, res) => {
+const updateUser = (req, res, next) => {
   const { name, avatar } = req.body;
   User.findByIdAndUpdate(
     req.user._id,

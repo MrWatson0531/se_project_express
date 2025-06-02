@@ -2,7 +2,6 @@ const BadReqestError = require("../errors/BadRequestError");
 const ForbiddenError = require("../errors/ForbiddenError");
 const NotFoundError = require("../errors/NotFoundError");
 const clothingItem = require("../models/clothingItem");
-const { DEFAULT, NOT_FOUND, BAD_REQUEST, FORBIDDEN } = require("../utils/errors");
 
 const createItem = (req, res, next) => {
   const { name, weather, imageUrl } = req.body;
@@ -14,24 +13,20 @@ const createItem = (req, res, next) => {
     })
     .catch((err) => {
       if (err.name === "ValidationError") {
-        return next(new BadReqestError("Create Item Failed"))
-        //res.status(BAD_REQUEST).send({ message: "Create Item Failed" });
+        return next(new BadReqestError("Create Item Failed"));
       }
-      //return res.status(DEFAULT).send({ message: "Failed to create Item" });
-      return next(err)
-    });
-};
-
-const getItems = (req, res) => {
-  clothingItem
-    .find({})
-    .then((items) => res.status(200).send(items))
-    .catch((err) => {
       return next(err);
     });
 };
 
-const deleteItem = (req, res) => {
+const getItems = (req, res, next) => {
+  clothingItem
+    .find({})
+    .then((items) => res.status(200).send(items))
+    .catch((err) => next(err));
+};
+
+const deleteItem = (req, res, next) => {
   const { itemId } = req.params;
 
   clothingItem
@@ -52,11 +47,11 @@ const deleteItem = (req, res) => {
       if (err.name === "CastError") {
         return next(new BadReqestError("Failed to delete item"));
       }
-      next(err);
+      return next(err);
     });
 };
 
-const likeItem = (req, res) =>
+const likeItem = (req, res, next) =>
   clothingItem
     .findByIdAndUpdate(
       req.params.itemId,
@@ -68,13 +63,14 @@ const likeItem = (req, res) =>
     .catch((err) => {
       if (err.name === "DocumentNotFoundError") {
         return next(new NotFoundError("Like item failed"));
-      } else if (err.name === "CastError") {
+      }
+      if (err.name === "CastError") {
         return next(new BadReqestError("Invalid data"));
       }
       return next(err);
     });
 
-const dislikeItem = (req, res) =>
+const dislikeItem = (req, res, next) =>
   clothingItem
     .findByIdAndUpdate(
       req.params.itemId,
@@ -86,7 +82,8 @@ const dislikeItem = (req, res) =>
     .catch((err) => {
       if (err.name === "DocumentNotFoundError") {
         return next(new NotFoundError("Like item failed"));
-      } else if (error.name === "CastError") {
+      }
+      if (err.name === "CastError") {
         return next(new BadReqestError("Invalid data"));
       }
       return next(err);

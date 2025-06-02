@@ -80,6 +80,7 @@ module.exports.validateCardBody = celebrate({
   }),
 });
 
+
 module.exports.validateId = celebrate({
   params: Joi.object().keys({
     email: Joi.string().email().required(),

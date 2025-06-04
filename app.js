@@ -1,5 +1,5 @@
 require("dotenv").config();
-const {errors} = require('celebrate');
+const { errors } = require("celebrate");
 const mongoose = require("mongoose");
 const express = require("express");
 const cors = require("cors");
@@ -21,14 +21,13 @@ const indexRouter = require("./routes/index");
 
 app.use(cors());
 app.use(express.json());
-app.use((err, req, res, next) => {
-  res.status(err.statusCode).send({ message: err.message });
-});
 
 app.use("/", indexRouter);
-app.use(errorHandler);
+
 app.use(routes);
-app.use(errors()); 
+app.use(errors());
+
+app.use(errorHandler);
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
 });

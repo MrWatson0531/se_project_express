@@ -1,8 +1,4 @@
-const express = require("express");
-
-const app = express();
-
-app.use((err, req, res, next) => {
+const errorHandler = (err, req, res, next) => {
   console.error(err);
   const { statusCode = 500, message } = err;
   res
@@ -12,4 +8,6 @@ app.use((err, req, res, next) => {
         ? 'An error occurred on the server'
         : message
     });
-});
+};
+
+module.exports = errorHandler;

@@ -5,8 +5,7 @@ const BadReqestError = require("../errors/BadRequestError");
 const ConflictError = require("../errors/ConflictError");
 const NotFoundError = require("../errors/NotFoundError");
 const NotAuthorizedError = require("../errors/NotAuthorizedError");
-
-const JWT_SECRET = "Secret Password";
+const { JWT_SECRET } = require("../config");
 
 const createUser = (req, res, next) => {
   const { name, avatar, email, password } = req.body;
@@ -26,7 +25,7 @@ const createUser = (req, res, next) => {
       if (err.name === "ValidationError") {
         return next(new BadReqestError("Validation error"));
       }
-      if (err.code === 409) {
+      if (err.code === 11000) {
         return next(new ConflictError("User already exists"));
       }
       return next(err);
@@ -41,7 +40,8 @@ const getCurrentUser = (req, res, next) => {
     .catch((err) => {
       if (err.name === "DocumentNotFoundError") {
         return next(new NotFoundError("User not Found"));
-      } if (err.name === "CastError") {
+      }
+      if (err.name === "CastError") {
         return next(new BadReqestError("User not found"));
       }
       return next(err);

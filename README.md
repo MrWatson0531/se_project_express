@@ -1,4 +1,4 @@
-# WWW.WTWR.smelly.cc (What to Wear?): Back End
+# API.WTWR.smelly.cc (What to Wear?): Back End
 This project is focused on back-end functionality when creating a server for my WTWR application.
 
 technologies used in this portion of the project are Express, MongoDB, CORS, and implementing validation and user authorization.

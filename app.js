@@ -18,6 +18,7 @@ mongoose
   })
   .catch(console.error);
 const indexRouter = require("./routes/index");
+
 const corsOptions = {origin: ["https://www.wtwr.smelly.cc", "http://localhost:3001"]}
 app.use(cors(corsOptions));
 app.use(express.json());

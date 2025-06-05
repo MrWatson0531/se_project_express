@@ -5,6 +5,7 @@ const express = require("express");
 const cors = require("cors");
 const errorHandler = require("./middlewares/errors");
 const routes = require("./routes/index");
+const { requestLogger, errorLogger } = require("./middlewares/logger");
 
 mongoose.connect("mongodb://127.0.0.1:27017/wtwr_db");
 const app = express();
@@ -19,13 +20,16 @@ mongoose
   .catch(console.error);
 const indexRouter = require("./routes/index");
 
-const corsOptions = {origin: ["https://www.wtwr.smelly.cc", "http://localhost:3001"]}
+const corsOptions = {
+  origin: ["https://www.wtwr.smelly.cc", "http://localhost:3001"],
+};
 app.use(cors(corsOptions));
 app.use(express.json());
 
 app.use("/", indexRouter);
-
+app.use(requestLogger);
 app.use(routes);
+app.use(errorLogger);
 app.use(errors());
 
 app.use(errorHandler);

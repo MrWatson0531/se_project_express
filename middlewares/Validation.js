@@ -1,5 +1,4 @@
 const { Joi, celebrate } = require("celebrate");
-const router = require("express").Router();
 const validator = require("validator");
 
 const validateURL = (value, helpers) => {

@@ -23,8 +23,7 @@ router.get("/", getItems);
 // Update
 router.put("/:itemId/likes", auth, validateId, likeItem);
 
-router.delete("/:itemId/likes", auth, validateId, dislikeItem); //localhost:3001/items/1298312398129831283/likes 
-// params = {itemId: 1298312398129831283}
+router.delete("/:itemId/likes", auth, validateId, dislikeItem);
 
 //  delete("/items/:itemId");
 
